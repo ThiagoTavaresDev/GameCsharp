@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Media;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -20,11 +21,16 @@ namespace MatchGame
     DispatcherTimer timer = new DispatcherTimer();
     int tenthsOfSecondsElapsed;
     int matchesFound;
+    double bestTime = double.MaxValue;
+    SoundPlayer tickPlayer;
     public MainWindow()
     {
       InitializeComponent();
       timer.Interval = TimeSpan.FromSeconds(.1);
       timer.Tick += Timer_Tick;
+
+      tickPlayer = new SoundPlayer("C:\\Users\\Thzin\\Downloads\\som.wav");
+
       SetUpGame();
     }
 
@@ -32,13 +38,22 @@ namespace MatchGame
     {
       tenthsOfSecondsElapsed++;
       timeTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
-      if(matchesFound == 8)
+      if (tenthsOfSecondsElapsed % 2 == 0)
+      {
+        tickPlayer.Play();
+      }
+      if (matchesFound == 8)
       {
         timer.Stop();
         timeTextBlock.Text = timeTextBlock.Text + " - Jogar denovo?";
+        if (tenthsOfSecondsElapsed / 10F < bestTime)
+        {
+          bestTime = tenthsOfSecondsElapsed / 10F;
+          bestTimeText.Text = "Melhor Tempo: " + bestTime.ToString("0.0s");
+        }
       }
     }
-
+   
     private void SetUpGame()
     {
       List<string> animalEmoji = new List<string>()
@@ -55,7 +70,7 @@ namespace MatchGame
       Random random = new Random();
       foreach (TextBlock textBlock in mainGrid.Children.OfType<TextBlock>())
       {
-        if (textBlock.Name != "timeTextBlock")
+        if (textBlock.Name != "timeTextBlock" && textBlock.Name != "bestTimeText")
         {
           textBlock.Visibility = Visibility.Visible;
           int index = random.Next(animalEmoji.Count);
